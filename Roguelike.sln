@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Library1", "Library1\Library1.fsproj", "{91E39C70-2A01-4397-8302-EEAA2D919536}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Roguelike", "Library1\Roguelike.fsproj", "{91E39C70-2A01-4397-8302-EEAA2D919536}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Dungeon Generator", "Dungeon Generator\Dungeon Generator.fsproj", "{F5A0E883-AE62-4D29-80E7-9ACBA2776A85}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{91E39C70-2A01-4397-8302-EEAA2D919536}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91E39C70-2A01-4397-8302-EEAA2D919536}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91E39C70-2A01-4397-8302-EEAA2D919536}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5A0E883-AE62-4D29-80E7-9ACBA2776A85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5A0E883-AE62-4D29-80E7-9ACBA2776A85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5A0E883-AE62-4D29-80E7-9ACBA2776A85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5A0E883-AE62-4D29-80E7-9ACBA2776A85}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
