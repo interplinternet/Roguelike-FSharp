@@ -87,18 +87,29 @@ module Level =
     open Shapes
     open DataTypes
 
-    let selectRoom name level =
-        List.find (fun aRoom -> aRoom.Name = name) level
-    
+    let rec selectRoom name level =
+            match level with
+            | { Name = x; Anchor = _; Neighbors = _ } as room when x = name -> Some room
+            | { Name = _; Anchor = _; Neighbors = roomList } -> selectRoomHelper name roomList
+            | { Name = _; Anchor = _; Neighbors = [] } -> None
+    and selectRoomHelper name roomList =
+        match roomList with
+        | [] -> None
+        | room :: tail -> 
+            let maybeRoom = selectRoom name room
+            match maybeRoom with Some maybeRoom -> Some maybeRoom | _ -> selectRoomHelper name tail
+        
     let hasRoomp aRoom =
         List.length(aRoom.Neighbors) <= NEIGHBORMAX
 
     let randomName() = // needs an equivalent for gensym, which guarantees no collisions
         let charArray = [| for i in 0 .. 9 -> [|'A'..'Z'|].[rand.Next(26)] |]
         System.String.Concat(charArray)
+
     let randomShape() =
         let shapeChoices = [ randomCircle(); randomRectangle() ]
         shapeChoices.[rand.Next(List.length shapeChoices)]
+
     let randomRoom() = 
         { Name = randomName();
           Shape = randomShape();
@@ -110,6 +121,7 @@ module Level =
           Shape = randomShape();
           Anchor = { X = rand.Next(WIDTH); Y = rand.Next(HEIGHT) };
           Neighbors = [] }
+
     let addNewNeighbor (homeRoom: Room) (newRoom: Room)  =
         { homeRoom with Neighbors = newRoom :: homeRoom.Neighbors }
         // conses the entire new room on, but can just do the name
@@ -118,9 +130,12 @@ module Level =
         // either make so that there's only one "Room" (really a level)
         // and the level continues through its neighbors
 
-    let newRoom rooms =
-        match rooms with
-        | [] -> [ randomRoom() ]
-        | aRoom :: tail when hasRoomp(aRoom) -> 
-            let newRoom = makeRoom aRoom.Name
-            newRoom :: addNewNeighbor aRoom newRoom :: tail
+    (* this needs fixing. Right now this works with the list-of-rooms approach. It should find either a random
+       room or the tail end (room with no neighbors) and insert a newRoom there. *)
+    let newRoom room =
+        match room with
+        | { Name = _; Shape = _; Anchor = _; Neighbors = []; } -> { room with Neighbors = [ randomRoom() ] }
+        | { Name = _; Shape = _; Anchor = _; Neighbors = roomList; } when hasRoomp(room) -> failwith "oops!"
+            // how can we make this an undirected graph? We can't do it while ALSO using the entire room itself
+            // as a level. Then we add the new room to the previous room's neighbor, and then add THAT previous room itself and all of its neighbors to the new rooms neighbors
+        | _ -> room
