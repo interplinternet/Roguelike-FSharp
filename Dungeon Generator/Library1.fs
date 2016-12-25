@@ -36,12 +36,13 @@ module DataTypes =
     type Cell = 
         { Anchor : Posn
           Terrain : Terrain }
-    
+    type Neighbors = list<string>
+
     type Room = 
         { Name : string
           Shape : Posn -> Boolean
           Anchor : Posn
-          Neighbors : list<Room> } 
+          Neighbors : Neighbors } 
           (* either list<Room> or list<string>. The former directly implements the level structure and the second one has names as neighbors
              and requires you to pass and search the level separately. I'm not sure which one is more convenient. *)
     
@@ -87,17 +88,8 @@ module Level =
     open Shapes
     open DataTypes
 
-    let rec selectRoom name level =
-            match level with
-            | { Name = x; Anchor = _; Neighbors = _ } as room when x = name -> Some room
-            | { Name = _; Anchor = _; Neighbors = roomList } -> selectRoomHelper name roomList
-            | { Name = _; Anchor = _; Neighbors = [] } -> None
-    and selectRoomHelper name roomList =
-        match roomList with
-        | [] -> None
-        | room :: tail -> 
-            let maybeRoom = selectRoom name room
-            match maybeRoom with Some maybeRoom -> Some maybeRoom | _ -> selectRoomHelper name tail
+    let selectRoom name level =
+        List.find (fun x -> x.Name = name) level
         
     let hasRoomp aRoom =
         List.length(aRoom.Neighbors) <= NEIGHBORMAX
@@ -123,19 +115,18 @@ module Level =
           Neighbors = [] }
 
     let addNewNeighbor (homeRoom: Room) (newRoom: Room)  =
-        { homeRoom with Neighbors = newRoom :: homeRoom.Neighbors }
-        // conses the entire new room on, but can just do the name
-        // this needs to be fixed. Right now the size will grow very quickly because each
-        // room might have a copy of all the level so far as its neighbors,
-        // either make so that there's only one "Room" (really a level)
-        // and the level continues through its neighbors
+        { homeRoom with Neighbors = newRoom.Name :: homeRoom.Neighbors },
+        { newRoom with Neighbors = homeRoom.Name :: newRoom.Neighbors }
 
-    (* this needs fixing. Right now this works with the list-of-rooms approach. It should find either a random
-       room or the tail end (room with no neighbors) and insert a newRoom there. *)
-    let newRoom room =
-        match room with
-        | { Name = _; Shape = _; Anchor = _; Neighbors = []; } -> { room with Neighbors = [ randomRoom() ] }
-        | { Name = _; Shape = _; Anchor = _; Neighbors = roomList; } when hasRoomp(room) -> failwith "oops!"
-            // how can we make this an undirected graph? We can't do it while ALSO using the entire room itself
-            // as a level. Then we add the new room to the previous room's neighbor, and then add THAT previous room itself and all of its neighbors to the new rooms neighbors
-        | _ -> room
+    let rec selectRandomNotFull (level: list<Room>) =
+        let attempt = level.[rand.Next(List.length level)]
+        if hasRoomp attempt then attempt else 
+        selectRandomNotFull (List.skipWhile (fun (x: Room) -> x.Name = attempt.Name) level)
+
+    let newRoom (level: list<Room>) =
+        if level.IsEmpty then [ randomRoom() ] else
+        let homeRoom' =  selectRandomNotFull level
+        let newNeighbor' = randomRoom()
+        let homeRoom, newNeighbor = addNewNeighbor homeRoom' newNeighbor'
+        let rest, homePlusLevel = level |> List.splitAt(List.findIndex(fun (x: Room) -> x.Name = homeRoom'.Name) level)
+        newNeighbor :: homeRoom :: rest @ List.tail homePlusLevel
